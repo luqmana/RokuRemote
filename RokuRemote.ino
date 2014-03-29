@@ -166,7 +166,7 @@ ISR(TIMER1_COMPA_vect)
     
     TCCR1A |= _BV(WGM11);  // Turn on PWM phase correct mode (mode 10),
                            // i.e. TOP is ICR1, Update of OCR1A at TOP,  TOV1 flag set on BOTTOM
-    TCCR1B |= _BV(WGM13) | _BV(CS10)|_BV(CS12);  // Set prescaler to 1,
+    TCCR1B |= _BV(WGM13) | _BV(CS10);  // Set prescaler to 1,
     sei();
 }*/
 
