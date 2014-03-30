@@ -1,0 +1,25 @@
+3           home
+25          up
+51          down
+173         right
+30          left
+42          ok
+180         <<
+179         some down-ish
+203/75      netflix
+97/225      */options
+144/16      amazon
+210/82      pandora
+160         play/pause ?
+153         some uppish, maybe rewind?
+230         back/actual back
+102         Another form of back?
+131         back3/home?
+248         ?
+8           vudu
+120         ? 
+127         crackle
+132         ?
+136         play?
+143         movies
+32          channel store
