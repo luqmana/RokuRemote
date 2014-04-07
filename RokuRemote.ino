@@ -1,6 +1,15 @@
 
 // Using OC1 = PB1 = Pin 9
-const int ledPin =  9;      // the number of the LED pin
+const int homeButton    = 3;
+const int okButton      = 4;
+const int rightButton   = 5;
+const int leftButton    = 6;
+const int upButton      = 7;
+const int downButton    = 8;
+
+#define IR_LED   9
+#define REG_LED 10
+
 #define PULSE_ON_PWM     (TCCR1A |= _BV(COM1A1))
 #define PULSE_OFF_PWD    (TCCR1A &= ~(_BV(COM1A1)))
 #define PULSE_ON         ledState=HIGH
@@ -83,16 +92,123 @@ void txRepNEC1(unsigned char dev, unsigned char subdev, unsigned char command, u
 }
 
 unsigned char cnt;
+bool incmode;
+
 void setup() {
-  pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, LOW);
+  pinMode(homeButton, INPUT_PULLUP);
+  pinMode(okButton, INPUT_PULLUP);
+  pinMode(rightButton, INPUT_PULLUP);
+  pinMode(leftButton, INPUT_PULLUP);
+  pinMode(upButton, INPUT_PULLUP);
+  pinMode(downButton, INPUT_PULLUP);
+  pinMode(IR_LED, OUTPUT);
+  pinMode(REG_LED, OUTPUT);
+  digitalWrite(IR_LED, LOW);
+  digitalWrite(REG_LED, LOW);
   init38kPulse();
   cnt = 0;
+  Serial.begin(115200);
+  incmode = false;
 }
+
+char x[10];
 
 void loop()
 {
-  txNEC(234,194,cnt++);
+    if (!digitalRead(homeButton)) {
+        Serial.write("Home was pressed\n");
+        txNEC(234, 194, 3);
+    }
+    if (!digitalRead(okButton)) {
+        Serial.write("OK was pressed\n");
+        txNEC(234, 194, 42);
+    }
+    if (!digitalRead(rightButton)) {
+        Serial.write("Right was pressed\n");
+        txNEC(234, 194, 173);
+    }
+    if (!digitalRead(leftButton)) {
+        Serial.write("Left was pressed\n");
+        txNEC(234, 194, 30);
+    }
+    if (!digitalRead(upButton)) {
+        Serial.write("Up was pressed\n");
+        txNEC(234, 194, 25);
+    }
+    if (!digitalRead(downButton)) {
+        Serial.write("Down was pressed\n");
+        txNEC(234, 194, 51);
+    }
+    if (Serial.available() > 0) {
+        int i = Serial.parseInt();
+        if (i == -1) {
+            incmode = !incmode;
+            Serial.write("Flipped mode.\n");
+            return;
+        }
+        sprintf(x, "Read: %d\n", i);
+        Serial.write(x);
+
+        if (incmode) {
+            cnt = i;
+        } else {
+            txRepNEC1(234, 194, i, 3000);
+        }
+    }
+
+    if (incmode) {
+        /*
+        sprintf(x, "%d\n", cnt);
+        Serial.write(x);
+        txNEC(234, 194, 3);
+        delay(200);
+        txNEC(234, 194, 173);
+        delay(500);
+        txNEC(234, 194, 173);
+        delay(1000);
+        txNEC(234, 194, cnt++);
+        delay(800);
+        */
+        switch (cnt) {
+            case 3:
+            case 25:
+            case 51:
+            case 173:
+            case 42:
+            case 180:
+            case 179:
+            case 203:
+            case 75:
+            case 97:
+            case 225:
+            case 144:
+            case 16:
+            case 210:
+            case 82:
+            case 160:
+            case 153:
+            case 230:
+            case 102:
+            case 131:
+            case 248:
+            case 8:
+            case 120:
+            case 127:
+            case 132:
+            case 136:
+            case 143:
+                break;
+
+            default:
+                sprintf(x, "%d\n", cnt);
+                Serial.write(x);
+                txNEC(234, 194, cnt);
+                delay(800);
+                break;
+        }
+
+        cnt++;
+    }
 }
 
 // 38khz = 26.3us
@@ -121,10 +237,11 @@ ISR(TIMER1_COMPA_vect)
 {
     // Is there proper PWM thing on timer i should be using
     if (ledState == HIGH) {
-        PORTB ^= (1<<1);
+        PORTB ^= (1 << 1) | (1 << 2);
     } else {
-        PORTB &= ~(1<<1);
+        PORTB &= ~((1 << 1) | (1 << 2));
     }
+    // yeah, letus use OC1 == PB1 == Pin 9 instead
 }
 
 /* Experimentally Determined function codes so far
@@ -169,4 +286,3 @@ ISR(TIMER1_COMPA_vect)
     TCCR1B |= _BV(WGM13) | _BV(CS10);  // Set prescaler to 1,
     sei();
 }*/
-
